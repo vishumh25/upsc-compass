@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UPSC Compass — Sociology & Syllabus Tracker</title>
+<style>
+:root {
+  --navy:#101729;
+  --teal:#006a61;
+  --mint:#e6f7f5;
+  --surface:#f5f7fb;
+  --border:#dce3ed;
+  --muted:#64748b;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--surface);
+  color:var(--navy);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+header {
+  background:white;
+  border-bottom:1px solid var(--border);
+  padding:18px 16px;
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+.brand { font-size:20px;font-weight:800; }
+.subtitle { color:var(--muted);font-size:13px;margin-top:5px; }
+main { max-width:900px;margin:auto;padding:20px 14px 50px; }
+h1 { font-size:27px;margin:8px 0; }
+.description { color:var(--muted);line-height:1.5; }
+.stats {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:20px 0;
+}
+.stat,.panel,.topic {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:15px;
+}
+.stat { padding:14px 10px; }
+.stat strong { display:block;font-size:23px; }
+.stat span { color:var(--muted);font-size:12px; }
+.progress-track {
+  height:8px;background:#e8edf4;border-radius:20px;overflow:hidden;
+  margin-top:10px;
+}
+.progress-fill { height:100%;background:var(--teal);width:0%; }
+.panel { padding:15px;margin:16px 0; }
+.controls { display:grid;gap:10px; }
+input,select,button {
+  width:100%;min-height:44px;border-radius:10px;
+  border:1px solid var(--border);padding:10px 12px;
+  font:inherit;background:white;color:var(--navy);
+}
+button { cursor:pointer;font-weight:650; }
+.primary { background:var(--navy);color:white;border-color:var(--navy); }
+.tabs { display:flex;gap:8px;margin:18px 0; }
+.tabs button { flex:1; }
+.tabs button.active { background:var(--teal);color:white;border-color:var(--teal); }
+.topic { padding:14px;margin:10px 0; }
+.topic h3 { margin:0 0 8px;font-size:16px;line-height:1.4; }
+.topic p { color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 12px; }
+.topic-bottom { display:grid;grid-template-columns:1fr;gap:8px; }
+.tag { font-size:12px;color:var(--teal);font-weight:700;margin-bottom:8px; }
+.small { font-size:12px;color:var(--muted); }
+.actions { display:flex;gap:8px;margin-top:12px; }
+.actions button { flex:1; }
+footer { color:var(--muted);font-size:12px;text-align:center;padding:20px; }
+.notice { background:var(--mint);padding:12px;border-radius:10px;font-size:13px;line-height:1.5; }
+@media(min-width:600px) {
+  .controls { grid-template-columns:2fr 1fr 1fr; }
+  .topic-bottom { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">UPSC Compass <span style="color:#2ca99b">●</span></div>
+  <div class="subtitle">SOCIOLOGY OPTIONAL · SYLLABUS TRACKER</div>
+</header>
+
+<main>
+  <h1>Sociology Workspace</h1>
+  <p class="description">Organise your Optional preparation, monitor syllabus coverage and identify topics that need revision.</p>
+
+  <div class="stats">
+    <div class="stat"><strong id="totalCount">0</strong><span>Total topics</span></div>
+    <div class="stat"><strong id="doneCount">0</strong><span>Completed or mastered</span></div>
+    <div class="stat"><strong id="percentCount">0%</strong><span>Overall progress</span></div>
+  </div>
+
+  <div class="panel">
+    <strong>Overall syllabus progress</strong>
+    <div class="progress-track"><div class="progress-fill" id="overallBar"></div></div>
+    <p class="small" id="progressLabel">0 of 0 topics completed or mastered</p>
+  </div>
+
+  <div class="panel">
+    <div class="notice">Your changes are saved in this browser on this device. This test page does not yet sync with the main UPSC Compass app or other devices.</div>
+    <div class="actions">
+      <button id="exportBtn">Export progress</button>
+      <button id="resetBtn">Reset progress</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="active" id="paper1Btn">Paper I</button>
+    <button id="paper2Btn">Paper II</button>
+  </div>
+
+  <div class="controls">
+    <input id="searchBox" type="search" placeholder="Search topics…">
+    <select id="statusFilter">
+      <option value="all">All statuses</option>
+      <option>Not Started</option>
+      <option>In Progress</option>
+      <option>Completed</option>
+      <option>Revised</option>
+      <option>Mastered</option>
+    </select>
+    <select id="sortOrder">
+      <option value="syllabus">Syllabus order</option>
+      <option value="status">Status</option>
+      <option value="name">Topic name</option>
+    </select>
+  </div>
+
+  <div id="topicList" aria-live="polite"></div>
+  <footer>UPSC Compass · Sociology tracker prototype · Verify syllabus coverage against the official UPSC syllabus.</footer>
+</main>
+
+<script>
+const STORAGE_KEY = "upsc_compass_sociology_tracker_v1";
+
+const syllabus = {
+  "Paper I": [
+    ["Sociology: The Discipline","Modernity, emergence of sociology, scope and comparison with other social sciences."],
+    ["Sociology as Science","Scientific method, objectivity, value neutrality, facts and values."],
+    ["Research Methods and Analysis","Qualitative and quantitative methods, survey, sampling, hypothesis and research design."],
+    ["Sociological Thinkers: Karl Marx","Historical materialism, class struggle, alienation and mode of production."],
+    ["Sociological Thinkers: Émile Durkheim","Social facts, division of labour, suicide and religion."],
+    ["Sociological Thinkers: Max Weber","Social action, ideal types, authority, bureaucracy and religion."],
+    ["Sociological Thinkers: Talcott Parsons","Social system, pattern variables and functionalism."],
+    ["Sociological Thinkers: Robert K. Merton","Manifest and latent functions, dysfunctions and middle-range theory."],
+    ["Stratification and Mobility","Social stratification, theories of inequality, class, status, gender and mobility."],
+    ["Work and Economic Life","Social organisation of work, industrialisation, labour and formal and informal sectors."],
+    ["Politics and Society","Power, authority, bureaucracy, elites, pressure groups and political participation."],
+    ["Religion and Society","Sociological theories of religion, secularisation and religious revival."],
+    ["Systems of Kinship","Family, marriage, kinship, descent, patriarchy and changing household forms."],
+    ["Social Change in Modern Society","Theories, development, globalisation, modernisation and social movements."]
+  ],
+  "Paper II": [
+    ["Perspectives on Indian Society","Indological, structural-functional, Marxist and subaltern perspectives."],
+    ["Impact of Colonial Rule","Colonialism, nationalism, modernisation and social reform."],
+    ["Rural and Agrarian Social Structure","Village studies, land ownership, agrarian relations and rural change."],
+    ["Caste System","Theories of caste, features, change, mobility and contemporary debates."],
+    ["Tribal Communities in India","Distribution, integration, autonomy, displacement and development."],
+    ["Social Classes in India","Agrarian classes, industrial classes, middle class and informal workers."],
+    ["Systems of Kinship in India","Regional variations, family, marriage, kinship and changing patterns."],
+    ["Religion and Society in India","Religious communities, pluralism, minorities and secularism."],
+    ["Visions of Social Change in India","Constitutional measures, planning, reform, development and social policy."],
+    ["Rural and Agrarian Transformation","Green Revolution, rural labour, migration and agrarian movements."],
+    ["Industrialisation and Urbanisation","Industry, urban growth, slums, migration and urban social problems."],
+    ["Politics and Society in India","Democracy, citizenship, parties, pressure groups and decentralisation."],
+    ["Social Movements in Modern India","Peasant, farmers, women's, Dalit, backward-class and environmental movements."],
+    ["Population Dynamics","Population growth, demographic transition, fertility, mortality and migration."],
+    ["Challenges of Social Transformation","Poverty, inequality, violence against women, caste conflict and communalism."]
+  ]
+};
+
+let currentPaper = "Paper I";
+let progress = {};
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    if (saved && typeof saved === "object" && !Array.isArray(saved)) progress = saved;
+  } catch (error) {
+    progress = {};
+  }
+}
+
+function keyFor(paper, index) {
+  return paper + ":" + index;
+}
+
+function statusFor(key) {
+  return progress[key]?.status || "Not Started";
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    render();
+  } catch (error) {
+    alert("Your browser could not save the changes. Please check available storage.");
+  }
+}
+
+function allTopics() {
+  return Object.entries(syllabus).flatMap(([paper, topics]) =>
+    topics.map((topic, index) => ({
+      paper, index, title: topic[0], detail: topic[1],
+      key: keyFor(paper, index)
+    }))
+  );
+}
+
+function renderStats() {
+  const topics = allTopics();
+  const completed = topics.filter(t =>
+    ["Completed", "Mastered"].includes(statusFor(t.key))
+  ).length;
+  const percent = topics.length ? Math.round(completed / topics.length * 100) : 0;
+
+  document.getElementById("totalCount").textContent = topics.length;
+  document.getElementById("doneCount").textContent = completed;
+  document.getElementById("percentCount").textContent = percent + "%";
+  document.getElementById("overallBar").style.width = percent + "%";
+  document.getElementById("progressLabel").textContent =
+    completed + " of " + topics.length + " topics completed or mastered";
+}
+
+function render() {
+  renderStats();
+
+  const query = document.getElementById("searchBox").value.trim().toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+  const sort = document.getElementById("sortOrder").value;
+
+  let topics = allTopics().filter(t => t.paper === currentPaper);
+  topics = topics.filter(t =>
+    (t.title + " " + t.detail).toLowerCase().includes(query) &&
+    (status === "all" || statusFor(t.key) === status)
+  );
+
+  if (sort === "name") topics.sort((a,b) => a.title.localeCompare(b.title));
+  if (sort === "status") topics.sort((a,b) => statusFor(a.key).localeCompare(statusFor(b.key)));
+
+  const list = document.getElementById("topicList");
+  list.replaceChildren();
+
+  if (!topics.length) {
+    const empty = document.createElement("div");
+    empty.className = "panel";
+    empty.textContent = "No topics match these filters.";
+    list.appendChild(empty);
+    return;
+  }
+
+  topics.forEach(topic => {
+    const card = document.createElement("article");
+    card.className = "topic";
+
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.textContent = topic.paper;
+
+    const title = document.createElement("h3");
+    title.textContent = topic.index + 1 + ". " + topic.title;
+
+    const detail = document.createElement("p");
+    detail.textContent = topic.detail;
+
+    const label = document.createElement("label");
+    label.className = "small";
+    label.textContent = "Preparation status";
+
+    const select = document.createElement("select");
+    ["Not Started","In Progress","Completed","Revised","Mastered"].forEach(value => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+    select.value = statusFor(topic.key);
+    select.addEventListener("change", () => {
+      progress[topic.key] = {
+        ...(progress[topic.key] || {}),
+        status: select.value,
+        updatedAt: new Date().toISOString()
+      };
+      saveProgress();
+    });
+
+    const notesLabel = document.createElement("label");
+    notesLabel.className = "small";
+    notesLabel.textContent = "Personal notes";
+
+    const notes = document.createElement("input");
+    notes.type = "text";
+    notes.maxLength = 500;
+    notes.placeholder = "Add a reminder or key concept…";
+    notes.value = progress[topic.key]?.notes || "";
+    notes.addEventListener("change", () => {
+      progress[topic.key] = {
+        ...(progress[topic.key] || {}),
+        notes: notes.value,
+        updatedAt: new Date().toISOString()
+      };
+      saveProgress();
+    });
+
+    const bottom = document.createElement("div");
+    bottom.className = "topic-bottom";
+    const statusWrap = document.createElement("div");
+    statusWrap.append(label, select);
+    const notesWrap = document.createElement("div");
+    notesWrap.append(notesLabel, notes);
+    bottom.append(statusWrap, notesWrap);
+
+    card.append(tag, title, detail, bottom);
+    list.appendChild(card);
+  });
+}
+
+document.getElementById("paper1Btn").addEventListener("click", () => {
+  currentPaper = "Paper I";
+  document.getElementById("paper1Btn").classList.add("active");
+  document.getElementById("paper2Btn").classList.remove("active");
+  render();
+});
+
+document.getElementById("paper2Btn").addEventListener("click", () => {
+  currentPaper = "Paper II";
+  document.getElementById("paper2Btn").classList.add("active");
+  document.getElementById("paper1Btn").classList.remove("active");
+  render();
+});
+
+["searchBox","statusFilter","sortOrder"].forEach(id => {
+  document.getElementById(id).addEventListener(
+    id === "searchBox" ? "input" : "change", render
+  );
+});
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const payload = {
+    schemaVersion: 1,
+    exportedAt: new Date().toISOString(),
+    progress
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "upsc-compass-syllabus-progress.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (!confirm("Reset all Sociology topic statuses and notes on this browser? Export your progress first if you need a backup.")) return;
+  progress = {};
+  saveProgress();
+});
+
+loadProgress();
+render();
+</script>
+</body>
+</html>
