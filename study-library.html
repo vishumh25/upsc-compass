@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UPSC Compass — Study Library</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      background: #f4f7fb;
+      color: #172033;
+    }
+    h1, h2 { color: #173b70; }
+    .card {
+      background: white;
+      padding: 18px;
+      margin: 16px 0;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #0001;
+    }
+    a { color: #1457b8; }
+    select, input {
+      padding: 10px;
+      margin: 5px 0;
+      max-width: 100%;
+    }
+    .tag {
+      display: inline-block;
+      background: #e3edff;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>UPSC Compass — Study Library</h1>
+  <p>Your topic-wise notes, syllabus tracker and Mains PYQ workspace.</p>
+
+  <div class="card">
+    <h2>Study Library</h2>
+    <p>This is the foundation for your expanded UPSC preparation library.</p>
+    <p><strong>Coverage planned:</strong> 2013–2026 Mains PYQs, General Studies I–IV, Sociology Papers I–II, and topic-wise syllabus notes.</p>
+  </div>
+
+  <div class="card">
+    <h2>Choose a subject</h2>
+    <select id="subject">
+      <option value="all">All subjects</option>
+      <option value="GS1">General Studies I</option>
+      <option value="GS2">General Studies II</option>
+      <option value="GS3">General Studies III</option>
+      <option value="GS4">General Studies IV</option>
+      <option value="SOC1">Sociology Paper I</option>
+      <option value="SOC2">Sociology Paper II</option>
+    </select>
+    <p id="subjectInfo">Select a subject to begin organizing your study plan.</p>
+  </div>
+
+  <div class="card">
+    <h2>Syllabus Progress</h2>
+    <label for="topic">Topic:</label><br>
+    <input id="topic" placeholder="Enter a syllabus topic"><br>
+    <label for="status">Status:</label><br>
+    <select id="status">
+      <option>Not started</option>
+      <option>Studying</option>
+      <option>Completed</option>
+      <option>Needs revision</option>
+    </select><br>
+    <button id="save">Save topic</button>
+    <ul id="topics"></ul>
+  </div>
+
+  <div class="card">
+    <h2>PYQ Verification</h2>
+    <p>Questions will be marked as official only after checking the original UPSC question paper.</p>
+    <p><span class="tag">Official source required</span></p>
+    <p><a href="https://www.upsc.gov.in/examinations/previous-question-papers" target="_blank" rel="noopener">Open UPSC Previous Question Papers</a></p>
+  </div>
+
+  <script>
+    const subject = document.getElementById('subject');
+    const info = document.getElementById('subjectInfo');
+
+    const descriptions = {
+      all: 'Browse your General Studies and Sociology preparation.',
+      GS1: 'History, Indian society, geography and related syllabus topics.',
+      GS2: 'Constitution, polity, governance, social justice and international relations.',
+      GS3: 'Economy, agriculture, science, environment, security and disaster management.',
+      GS4: 'Ethics, integrity, aptitude and case studies.',
+      SOC1: 'Sociological thinkers, research methods, concepts and theories.',
+      SOC2: 'Indian society, social change and related sociological topics.'
+    };
+
+    subject.addEventListener('change', () => {
+      info.textContent = descriptions[subject.value];
+    });
+
+    const topicInput = document.getElementById('topic');
+    const statusInput = document.getElementById('status');
+    const topicsList = document.getElementById('topics');
+
+    let topics = [];
+    try {
+      topics = JSON.parse(localStorage.getItem('upscStudyLibraryTopics') || '[]');
+    } catch (e) {
+      topics = [];
+    }
+
+    function renderTopics() {
+      topicsList.replaceChildren();
+      topics.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.textContent = item.name + ' — ' + item.status + ' ';
+
+        const remove = document.createElement('button');
+        remove.textContent = 'Remove';
+        remove.addEventListener('click', () => {
+          topics.splice(index, 1);
+          saveTopics();
+        });
+
+        li.appendChild(remove);
+        topicsList.appendChild(li);
+      });
+    }
+
+    function saveTopics() {
+      localStorage.setItem('upscStudyLibraryTopics', JSON.stringify(topics));
+      renderTopics();
+    }
+
+    document.getElementById('save').addEventListener('click', () => {
+      const name = topicInput.value.trim();
+      if (!name) {
+        alert('Please enter a topic first.');
+        return;
+      }
+
+      topics.push({ name, status: statusInput.value });
+      topicInput.value = '';
+      saveTopics();
+    });
+
+    renderTopics();
+  </script>
+</body>
+</html>
